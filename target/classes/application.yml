@@ -1,0 +1,21 @@
+# DataSource Config
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    schema: classpath:db/schema.sql #，每次启动程序，程序都会运行schema.sql文件，对数据库的数据操作
+    data: classpath:db/data.sql #，每次启动程序，程序都会运行data.sql文件，对数据库的数据操作
+    sql-script-encoding: utf-8 #编码
+    #url: jdbc:h2:file:C:/data/sample #配置h2数据库的连接地址
+    url: jdbc:h2:file:~/sample #配置h2数据库的连接地址
+    #url: jdbc:h2:mem:test #配置h2数据库的连接地址
+    username: sa
+    password: sa
+  h2:
+    console:
+      enabled: true #开启web console功能
+  thymeleaf:
+    cache: false
+server:
+  port: 1988
+mybatis:
+  mapper-locations: classpath:mapper/*.xml

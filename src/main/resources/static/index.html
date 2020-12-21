@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+
+    <link rel="stylesheet" type="text/css" href="/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="/themes/icon.css">
+    <script type="text/javascript" src="/jquery.min.js"></script>
+    <script type="text/javascript" src="/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="/datagrid-detailview.js"></script>
+    <script type="text/javascript" src="/easyui-lang-zh_CN.js"></script>
+
+</head>
+<body class="easyui-layout">
+
+<div data-options="region:'north',border:false" style="margin-left:0px;height:200px;padding:10px">
+    <div align="center">
+        <h1>摇号系统</h1>
+    </div>
+
+    <div align="center" style="margin-left: 200px;margin-right: 200px">
+        <div style="font-size:20px;margin-bottom: 10px" >
+            <span>项目:</span>&nbsp;&nbsp;<span id="sp_projectName">____________________</span>&nbsp;&nbsp;
+            <span>科目:</span>&nbsp;&nbsp;<span id="sp_subjectName">____________________</span>
+        </div>
+        <div style="font-size:20px;margin-bottom: 10px" >
+            <span>中签数:</span>&nbsp;&nbsp;<span id="sp_drawNum">__________</span>&nbsp;&nbsp;
+            <span>摇号人:</span>&nbsp;&nbsp;<span id="sp_drawer">__________</span>&nbsp;&nbsp;
+            <span>记录人:</span>&nbsp;&nbsp;<span id="sp_recorder">__________</span>
+        </div>
+    </div>
+
+    <div align="right" style="margin-right: 200px">
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="actDraw()">开始摇号</a>
+        <input id="drawFlag" style="display: none"/>
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="getDrawHis()">抽签历史</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="getProjectList()">项目管理</a>
+        <input id="projectId" style="display: none"/>
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="getSubjectList()">科目管理</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="$('#modal-instManage').window('open')">供方管理</a>
+    </div>
+</div>
+
+<div data-options="region:'center',border:false" style="width: 68%" align="center">
+    <table id="draw-list" class="easyui-datagrid" style="width: 100%;height: 100%"></table>
+
+</div>
+
+<div data-options="region:'west',border:false" style="width:15%;"></div>
+<div data-options="region:'east',border:false" style="width:15%;"></div>
+
+
+<div data-options="region:'south',border:false" style="height:50px;;padding:10px;"></div>
+
+<!--项目管理-->
+<div id="modal-projectManage" class="easyui-window" title="项目管理" data-options="modal:true,closed:true"
+     style="width:800px;height:495px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center',border:false" style="height: 88%">
+            <table id="projectList" class="easyui-datagrid" style="width:100%;height:100%" toolbar="#pro-toolbar"></table>
+        </div>
+        &lt;!&ndash;项目列表工具栏&ndash;&gt;
+        <div id="pro-toolbar">
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="addProject1()">新建项目</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="delProject()">删除项目</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-redo" plain="true" onclick="loadProject()">加载项目</a>
+        </div>
+    </div>
+</div>
+
+<!--新建项目-->
+<div id="modal-addProject" class="easyui-window" title="新建项目" data-options="modal:true,closed:true"
+     style="width:800px;height:600px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+
+        <div data-options="region:'north',border:false" style="height:40%;padding:5px;">
+            <form id="addProjectForm" method="post">
+
+                <div style="margin-bottom:10px">
+                    <label for="projectName" style="text-align:right; width:20%">项目名称：</label>
+                    <input id="projectName" class="easyui-textbox easyui-validatebox"
+                           style="width:81%;height:30px" name="name" data-options="required:true" />
+                </div>
+                <div style="margin-bottom:10px">
+                    <label for="drawNum" style="text-align:left;width:20%">中签数量：</label>
+                    <input id="drawNum" class="easyui-textbox easyui-validatebox"  name="drawNum"
+                           style="width:35%;height:30px" data-options="required:true" />
+                    <label for="date" style="margin-left: 20px;">日&nbsp;&nbsp;期&nbsp;：</label>
+                    <input id="date" class="easyui-datebox easyui-validatebox" name="date"
+                           style="width:35%;height:30px" data-options="formatter:dateFormatter,parser:myparser,required:true"/>
+                </div>
+                <div style="margin-bottom:10px">
+                    <label for="drawer" style="width:20%">摇&nbsp;号&nbsp;人&nbsp;：</label>
+                    <input id="drawer" class="easyui-textbox easyui-validatebox"
+                           style="width:35%;height:30px" name="drawer" data-options="required:true" />
+                    <label for="recorder" style="margin-left: 20px;">记录人：</label>
+                    <input id="recorder" class="easyui-textbox easyui-validatebox"
+                           style="width:35%;height:30px" name="recorder" data-options="required:true" />
+                </div>
+                <div style="margin-bottom:10px">
+                    <label style="width:20%">供方名称：</label>
+                    <input id="ss-inst" class="easyui-searchbox" data-options="prompt:'',searcher:doSearch1" style="width:35%" />
+                    <label for="subject" style="margin-left: 20px;">科&nbsp;&nbsp;目&nbsp;：</label>
+                    <input id="subject" class="easyui-combobox easyui-validatebox" data-options="required:true" style="width:35%;height:30px" name="subject.id"/>
+                </div>
+
+                <div style="margin-bottom:0px">
+                    <label for="subInstLevel" style="width:20%">供方小类：</label>
+                    <input id="subInstLevel" class="easyui-combobox" data-options="required:false" style="width:35%;height:30px" name="subject.levelId"/>
+                </div>
+
+            </form>
+        </div>
+
+        <div data-options="region:'center',border:false" style="height:50%;padding:10px;">
+            <div style="margin-top: 60px;margin-bottom: 10px">
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="toRightBatch()">——></a>
+            </div>
+            <div>
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="delRightBatch()"><——</a>
+            </div>
+        </div>
+        <div data-options="region:'west',border:false" style="width:45%;">
+            <table id="leftList" class="easyui-datagrid" style="width:100%;height:100%" toolbar=""></table>
+        </div>
+        <div data-options="region:'east',border:false" style="width:45%;">
+            <table id="rightList" class="easyui-datagrid" style="width:100%;height:100%"toolbar=""></table>
+        </div>
+        <div data-options="region:'south',border:false" style="height:10%;">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-top: 8px; width: 80px; margin-left: 20px;"
+               onclick="submit()">确定</a>
+        </div>
+    </div>
+</div>
+
+<!--抽签历史-->
+<div id="modal-drawHis" class="easyui-window" title="抽签历史" data-options="modal:true,closed:true"
+     style="width:800px;height:495px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center',border:false" style="height: 88%">
+            <!--供方列表工具栏-->
+            <div style="margin-bottom: 10px">
+                <label for="q-project" style="width:20%">项目：</label>
+                <input id="q-project" class="easyui-textbox" style="width:15%; height:30px"  data-options="required:false" />
+
+                <label for="q-subject" style="width:20%">科目：</label>
+                <input id="q-subject" class="easyui-combobox" style="width:15%;height:30px"/>
+
+                <label  style="width:20%">摇号日期：</label>
+                <input id="q-dateStart" class="easyui-datebox"
+                       style="width:15%;height:30px" data-options="formatter:dateFormatter,parser:myparser,required:false"/>
+                <span>-</span>
+                <input id="q-dateEnd" class="easyui-datebox"
+                       style="width:15%;height:30px" data-options="formatter:dateFormatter,parser:myparser,required:false"/>
+                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="queryDrawHisList()">搜索</a>
+                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="" plain="true" onclick="downloadDrawHisList()">导出</a>
+            </div>
+            <table id="drawHisTab" class="easyui-datagrid" style="width:100%;height:90%"></table>
+        </div>
+    </div>
+</div>
+
+<!--科目管理-->
+<div id="modal-subject" class="easyui-window" title="科目管理" data-options="modal:true,closed:true"
+     style="width:800px;height:495px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center',border:false" style="height: 80%">
+            <table id="subjectTab" class="easyui-datagrid" style="width:100%;height:100%" ></table>
+        </div>
+    </div>
+</div>
+
+<!--添加-修改科目-->
+<div id="modal-editSubject" class="easyui-window" data-options="modal:true,closed:true"
+     style="width:800px;height:495px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'north',border:false" style="height:20%;padding:5px;">
+            <div>
+                <form id="subjectForm" method="post">
+                    <div style="margin-bottom:10px">
+                        <label for="subjectName" style="width:20%">科目名称：</label>
+                        <input id="subjectName" class="easyui-textbox easyui-validatebox"
+                               style="width:81%;height:30px" name="name" data-options="required:true" />
+                    </div>
+                </form>
+            </div>
+            <div>
+                <label for="s-instName"  style="width:20%">供方名称：</label>
+                <input id="s-instName" class="easyui-searchbox" data-options="prompt:'',searcher:doSearch" style="width:150px" />
+            </div>
+        </div>
+        <div data-options="region:'center',border:false" style="height:60%;padding:10px;">
+            <div style="margin-top: 60px;margin-bottom: 10px">
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="toRightBatch1()">——></a>
+            </div>
+            <div>
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="delRightBatch1()"><——</a>
+            </div>
+        </div>
+        <div data-options="region:'west',border:false" style="width:45%;">
+            <table id="leftList1"  style="width:100%;height:100%"></table>
+        </div>
+        <div data-options="region:'east',border:false" style="width:45%;">
+            <table id="rightList1"  style="width:100%;height:100%"></table>
+        </div>
+        <div data-options="region:'south',border:false" style="height:10%;">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-top: 8px; width: 80px; margin-left: 20px;" onclick="submitSubjectForm()">确定</a>
+        </div>
+    </div>
+</div>
+
+<!--移动科目下的供方-->
+<!--<div id="modal-moveInst" class="easyui-window" data-options="modal:true,closed:true"
+     style="width:800px;height:495px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'north',border:false" style="height:20%;padding:5px;">
+            <div>
+                <form id="subjectForm" method="post">
+                    <div style="margin-bottom:10px">
+                        <label for="subjectName" style="width:20%">科目名称：</label>
+                        <input id="subjectName" class="easyui-textbox easyui-validatebox"
+                               style="width:81%;height:30px" name="name" data-options="required:true" />
+                    </div>
+                </form>
+            </div>
+            <div>
+                <label for="s-instName"  style="width:20%">供方名称：</label>
+                <input id="s-instName" class="easyui-searchbox" data-options="prompt:'',searcher:doSearch" style="width:150px" />
+            </div>
+        </div>
+        <div data-options="region:'center',border:false" style="height:60%;padding:10px;">
+            <div style="margin-top: 60px;margin-bottom: 10px">
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="toRightBatch1()">——></a>
+            </div>
+            <div>
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="delRightBatch1()"><——</a>
+            </div>
+        </div>
+        <div data-options="region:'west',border:false" style="width:45%;">
+            <table id="leftList1"  style="width:100%;height:100%"></table>
+        </div>
+        <div data-options="region:'east',border:false" style="width:45%;">
+            <table id="rightList1"  style="width:100%;height:100%"></table>
+        </div>
+        <div data-options="region:'south',border:false" style="height:10%;">
+            <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-top: 8px; width: 80px; margin-left: 20px;" onclick="submitSubjectForm()">确定</a>
+        </div>
+    </div>
+</div>-->
+
+<!--供方管理-->
+<div id="modal-instManage" class="easyui-window" title="供方管理" data-options="modal:true,closed:true"
+     style="width:800px;height:495px;padding:10px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center',border:false" style="height: 88%">
+            <table id="instMngList" class="easyui-datagrid" style="width:100%;height:100%" toolbar="#inst-toolbar"></table>
+        </div>
+
+        <!--供方列表工具栏-->
+        <div id="inst-toolbar">
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="addInst()">新增</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editInst()">修改</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="delInst()">删除</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editCity()">城市</a>
+        </div>
+    </div>
+</div>
+
+<!--新增/编辑供方-->
+<div id="modal-addInst" class="easyui-window" title="新增供方单位" data-options="modal:true,closed:true"
+     style="width:400px;height:200px;padding:10px;">
+    <div>
+        <form id="addInstForm" method="post">
+            <div style="margin-bottom:10px">
+                <label for="instName" style="text-align:right; width:20%">供方名称：&nbsp;</label>
+                <input id="instName" class="easyui-textbox easyui-validatebox" name="name"
+                       style="width:70%;height:30px" data-options="required:true" missingMessage = '请输入供方名称' />
+            </div>
+
+            <div style="margin-bottom:10px">
+                <label for="select-city" style="text-align:right; width:20%">城&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;市：</label>
+                <input id="select-city" class="easyui-combobox" style="width:35%;height:30px" name="city"/>
+            </div>
+
+            <div>
+                <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-top: 8px; width: 80px; margin-left: 10px;"
+                   onclick="$('#addInstForm').submit();">确定</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!--编辑城市列表-->
+<div id="modal-editCity" class="easyui-window" title="编辑城市" data-options="modal:true,closed:true"
+     style="width:400px;height:220px;padding:10px;">
+    <div>
+        <form id="editCityForm" method="post">
+            <div style="margin-bottom:10px">
+                <!--<label for="cityName">城市:&nbsp;</label>-->
+                <input id="cityName" class="easyui-textbox" name="cityName"
+                       style="width:90%;height:100px;"
+                       data-options="label: '以逗号分隔，例如：上海，广州。。。',labelPosition:'top',multiline:true"
+                       missingMessage = '' />
+            </div>
+
+            <div>
+                <a href="javascript:void(0)" class="easyui-linkbutton" style="margin-top: 8px; width: 80px; margin-left: 10px;"
+                   onclick="$('#editCityForm').submit();">确定</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!--<table id="instMngList" class="easyui-datagrid" title=""></table>-->
+</body>
+<script type="text/javascript" src="/js/index.js"></script>
+<script type="text/javascript" src="/js/instMngModal.js"></script>
+<script type="text/javascript" src="/js/addProjectModal.js"></script>
+<script type="text/javascript" src="/js/subjectModal.js"></script>
+<script type="text/javascript" src="/js/drawHis.js"></script>
+</html>

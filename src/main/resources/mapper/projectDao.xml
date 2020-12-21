@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antel.picker.dao.ProjectDao">
+
+    <resultMap id="project" type="com.antel.picker.model.Project">
+        <id column="TP_ID" property="id"/>
+        <result column="TP_NAME" property="name"/>
+        <result column="TP_DRAWER" property="drawer"/>
+        <result column="TP_RECORDER" property="recorder"/>
+        <result column="TP_DATE" property="date"/>
+        <result column="TP_DRAWNUM" property="drawNum"/>
+        <result column="TP_AMOUNT" property="amount"/>
+
+        <association property="subject" javaType="com.antel.picker.model.Subject">
+            <id column="TS_ID" property="id"/>
+            <result column="TS_NAME" property="name"/>
+        </association>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.antel.picker.model.Project" useGeneratedKeys="true" keyProperty="id">
+        insert into t_project (name,sub_id,drawer,recorder,date,drawNum,amount,source)
+        VALUES(#{name},#{subject.id},#{drawer},#{recorder},
+        to_date(#{date},'yyyy/mm/dd'),
+        #{drawNum},#{amount},#{source})
+    </insert>
+
+    <select id="getById" resultMap="project">
+      SELECT
+        TP.ID TP_ID,
+        TP.NAME TP_NAME,
+        TP.DRAWER TP_DRAWER,
+        TP.RECORDER TP_RECORDER,
+        TP.DATE TP_DATE,
+        TP.DRAWNUM TP_DRAWNUM,
+        TP.AMOUNT TP_AMOUNT,
+        TS.ID   TS_ID,
+        TS.NAME  TS_NAME
+       FROM t_project TP LEFT JOIN T_SUBJECT TS ON TP.SUB_ID = TS.ID WHERE TP.ID = #{id}
+
+    </select>
+
+    <select id="getByName" resultMap="project">
+        SELECT
+        TP.ID TP_ID,
+        TP.NAME TP_NAME,
+        TP.DRAWER TP_DRAWER,
+        TP.RECORDER TP_RECORDER,
+        TP.DATE TP_DATE,
+        TP.DRAWNUM TP_DRAWNUM,
+        TP.AMOUNT TP_AMOUNT,
+        TS.ID   TS_ID,
+        TS.NAME  TS_NAME
+        FROM t_project TP LEFT JOIN T_SUBJECT TS ON TP.SUB_ID = TS.ID WHERE TP.name = #{name}
+    </select>
+
+    <delete id="delProjectById" parameterType="integer">
+      delete from t_project t where t.id = #{id}
+    </delete>
+
+    <insert id="insertProjectInstRel" parameterType="com.antel.picker.model.Project">
+        insert into T_PROJECT_INST_REL (pro_id,inst_id)
+        <foreach collection="elements" open="(" close=")" separator="union " item="item">
+            select ${id},${item.id} from dual
+        </foreach>
+    </insert>
+
+    <select id="getLatestProject" resultType="com.antel.picker.model.Project">
+        SELECT * from t_project t where t.id = (select max(id) from t_project where source != 'upload')
+    </select>
+
+    <select id="selectAll" resultMap="project">
+        SELECT
+        TP.ID TP_ID,
+        TP.NAME TP_NAME,
+        TP.DRAWER TP_DRAWER,
+        TP.RECORDER TP_RECORDER,
+        TP.DATE TP_DATE,
+        TP.DRAWNUM TP_DRAWNUM,
+        TP.AMOUNT TP_AMOUNT,
+        TS.ID   TS_ID,
+        TS.NAME  TS_NAME
+       FROM t_project TP LEFT JOIN T_SUBJECT TS ON TP.SUB_ID = TS.ID
+       WHERE tp.source != 'upload'
+       order by TP.DATE DESC
+    </select>
+
+</mapper>

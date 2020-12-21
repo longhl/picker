@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antel.picker.dao.SubjectDao">
+
+    <resultMap id="institution" type="com.antel.picker.model.Institution">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="STATUS" property="status"/>
+        <result column="CFG_STATUS" property="cfgStatus"/>
+    </resultMap>
+
+
+
+    <select id="select" resultType="com.antel.picker.model.Subject">
+        select * from t_subject t where t.id = #{id}
+    </select>
+    <select id="selectAll" resultType="com.antel.picker.model.Subject">
+        select * from t_subject t order by t.id DESC
+    </select>
+
+    <insert id="insert" parameterType="com.antel.picker.model.Subject" useGeneratedKeys="true" keyProperty="id">
+        insert into t_subject (name) VALUES(#{name})
+    </insert>
+
+    <insert id="insertSubjectInstRel" parameterType="com.antel.picker.model.Subject">
+        insert into T_SUBJECT_INST_REL (sub_id,inst_id)
+        <foreach collection="instList" open="(" close=")" separator="union " item="item">
+            select ${id},${item.id} from dual
+        </foreach>
+    </insert>
+
+    <insert id="mergeSubjectInstRel" parameterType="com.antel.picker.model.Subject">
+
+        MERGE INTO T_SUBJECT_INST_REL rel
+        USING (<foreach collection="instList" open="" close="" separator="union" item="item">
+                  select ${id} sub_id, ${item.id} inst_id from dual
+              </foreach>) as T
+        ON t.sub_id = rel.sub_id and t.inst_id = rel.inst_id
+        when not MATCHed THEN
+        INSERT (sub_id,inst_id)
+        values(t.sub_id,t.inst_id)
+
+    </insert>
+
+    <select id="getInstList" resultMap="institution">
+        SELECT t.* from t_institution t inner join T_SUBJECT_INST_REL rel on rel.inst_id = t.id
+        where rel.sub_id = #{subId}
+        and t.status = '1'
+        order by t.id ASC
+    </select>
+
+    <select id="getInstList2" resultMap="institution">
+        SELECT t.* from t_institution t inner join T_SUBJECT_INST_REL rel on rel.inst_id = t.id
+        where rel.sub_id = #{subId}
+         and rel.level_Id = #{levelId}
+         and t.status = '1'
+         order by t.id ASC
+    </select>
+
+    <update id="updateSubject" parameterType="com.antel.picker.model.Subject">
+        update t_subject t set t.name = #{name} where t.id = #{id}
+    </update>
+
+    <delete id="delSubInstRel" parameterType="com.antel.picker.model.Subject">
+        delete from T_SUBJECT_INST_REL rel
+         where rel.sub_id = #{id}
+    </delete>
+
+    <delete id="delSubInstRel2" parameterType="com.antel.picker.model.Subject">
+        delete from T_SUBJECT_INST_REL rel
+        where rel.sub_id = #{id}
+        and rel.inst_id not in
+        <foreach collection="instList" open="(" close=")" separator="," item="item">
+            ${item.id}
+        </foreach>
+    </delete>
+
+    <delete id="delSingleSubInstRel">
+        delete from T_SUBJECT_INST_REL rel where rel.sub_id = #{subId} and rel.inst_id = #{instId}
+    </delete>
+
+    <delete id="delSubject" parameterType="com.antel.picker.model.Subject">
+        delete from t_subject t where t.id = #{id}
+    </delete>
+
+    <resultMap id="subInstLevel" type="com.antel.picker.model.SubInstLevel">
+        <id column="SUB_ID" property="subId"/>
+        <result column="LEVEL_ID" property="levelId"/>
+        <result column="LEVEL_NAME" property="levelName"/>
+    </resultMap>
+
+    <select id="selectSubInstLevel" parameterType="integer" resultMap="subInstLevel">
+
+        SELECT  Tt.SUB_ID, Tt.LEVEL_ID, decode(Tt.LEVEL_NAME,null,'其他',Tt.LEVEL_NAME,Tt.LEVEL_NAME) LEVEL_NAME from
+        (select DISTINCT T.SUB_ID, T.LEVEL_ID, T.LEVEL_NAME
+        FROM T_SUBJECT_INST_REL T
+        WHERE T.SUB_ID = #{subId}
+        order by T.LEVEL_NAME desc nulls last) tt
+    </select>
+
+</mapper>

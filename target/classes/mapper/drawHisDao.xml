@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antel.picker.dao.DrawHisDao">
+
+    <resultMap id="drawHis" type="com.antel.picker.model.DrawHis">
+        <result property="id" column="id"></result>
+        <result property="proId" column="PRO_ID"></result>
+        <result property="targetElements" column="target_Elements"></result>
+        <result property="allElements" column="all_Elements"></result>
+        <result property="version" column="version"></result>
+    </resultMap>
+
+
+    <insert id="insert" parameterType="com.antel.picker.model.DrawHis" useGeneratedKeys="true" keyProperty="id">
+        insert into t_draw_his (pro_id,TARGET_ELEMENTS,ALL_ELEMENTS,VERSION,CREATE_TIME)
+        VALUES(#{proId},#{targetElements},#{allElements},#{version},sysdate)
+    </insert>
+
+    <select id="nextVersion" resultType="integer">
+        select decode(max(t.version) ,null,0,max(t.version),max(t.version)+1) from t_draw_his t where t.pro_id  = #{proId}
+    </select>
+
+    <delete id="delete">
+        delete from t_draw_his where id = #{id}
+    </delete>
+
+    <select id="getDrawHis" resultType="com.antel.picker.model.DrawHisDto">
+        select
+        his.id id,
+        his.TARGET_ELEMENTS targetIds,
+        p.id projectId,
+        p.name projectName,
+        p.drawer drawer,
+        p.recorder recorder,
+        to_char(p.date,'yyyy/MM/dd') date,
+        s.id subjectId,
+        s.name subjectName,
+        from t_draw_his his
+        INNER JOIN t_project p on p.id = his.pro_id
+        LEFT JOIN t_subject s on p.sub_id = s.id
+        where 1 = 1
+        <if test="sp.projectName != null and sp.projectName != '' ">
+            AND p.name like '%' || #{sp.projectName} ||'%'
+        </if>
+        <if test="sp.subject != null and sp.subject != '' ">
+            AND s.id = #{sp.subject}
+        </if>
+        <if test="sp.dateStart != null and sp.dateStart != '' ">
+            AND p.date >= to_date(#{sp.dateStart},'yyyy/MM/dd')
+        </if>
+        <if test="sp.dateEnd != null and sp.dateEnd != '' ">
+            AND to_date(#{sp.dateEnd},'yyyy/MM/dd') >= p.date
+        </if>
+        order by p.DATE desc, his.version DESC
+    </select>
+
+    <select id="getDrawHisById" resultMap="drawHis">
+        select * from t_draw_his where id = #{id}
+    </select>
+
+    <select id="getDrawHisByPro" resultMap="drawHis">
+        select * from t_draw_his where pro_id = #{proId}
+    </select>
+</mapper>

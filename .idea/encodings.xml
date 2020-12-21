@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" native2AsciiForPropertiesFiles="true" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/changelog.txt" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/datagrid-detailview.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/demo" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/demo-mobile" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/easyloader.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/easyui-lang-zh_CN.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/jquery.easyui.min.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/jquery.easyui.mobile.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/jquery.min.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/license_freeware.txt" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/locale" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/plugins" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/readme.txt" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/src" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/themes" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/templates/result.xlsx" charset="GBK" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.antel.picker.dao.InstitutionDao">
+
+    <resultMap id="institution" type="com.antel.picker.model.Institution">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="city" property="city"/>
+        <result column="STATUS" property="status"/>
+        <result column="CFG_STATUS" property="cfgStatus"/>
+    </resultMap>
+
+
+    <select id="selectAll" resultMap="institution">
+        select
+        t.ID,
+        t.NAME,
+        t.city,
+        t.STATUS,
+        t.CFG_STATUS
+        from t_institution t where t.status = '1'
+        <if test="name != null and name != ''">
+            and t.name like '%' || #{name} || '%'
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.antel.picker.model.Institution" useGeneratedKeys="true" keyProperty="id">
+        insert into t_institution (name,city) VALUES(#{name},#{city})
+    </insert>
+
+    <update id="update" parameterType="com.antel.picker.model.Institution">
+        UPDATE t_institution t set t.NAME = #{name}, t.city = #{city} where t.id = #{id}
+    </update>
+
+    <update id="softDel" parameterType="com.antel.picker.model.Institution">
+        UPDATE t_institution t set t.status = '0' where t.id = #{id}
+    </update>
+
+    <update id="softDelBatch">
+        UPDATE t_institution t set t.status = '0' where t.id IN
+        <foreach collection="list" separator="," open="(" close=")" item="item">
+            #{item}
+        </foreach>
+    </update>
+
+    <delete id="delete" parameterType="integer">
+        delete from t_institution t where t.id = #{id}
+    </delete>
+
+    <select id="selectDrawList" resultType="com.antel.picker.model.Institution">
+        select T.* from t_institution t left join T_PROJECT_INST_REL  r on t.id = r.inst_id
+        where r.pro_id = #{projectId}
+    </select>
+
+    <select id="getMaxProId" resultType="integer">
+        SELECT max(pro_id) FROM T_PROJECT_INST_REL
+    </select>
+
+    <select id="selectBiIds" resultType="com.antel.picker.model.Institution">
+        select * from t_institution t where t.id in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectByName" resultType="com.antel.picker.model.Institution">
+        select * from t_institution t where t.NAME = #{name} AND t.status = '1'
+    </select>
+
+    <update id="clearCfgFlag">
+        update t_institution t set t.cfg_status = '0'
+    </update>
+
+    <update id="updateCfg">
+        update t_institution t set t.cfg_status = '1'
+        where t.id in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getInstIdInCfgList" resultType="integer">
+        select t.id from t_institution t where t.cfg_status = '1'
+    </select>
+
+    <update id="updateCity" parameterType="string">
+        MERGE INTO T_PARAMETER T
+        USING (select 'CITY_NAME' param_key from dual) as T1
+        ON t.param_key = T1.param_key
+        when MATCHed THEN
+        UPDATE SET param_val = #{cityName}
+        when not MATCHed THEN
+        INSERT (param_key, param_val)
+        values('CITY_NAME',#{cityName})
+    </update>
+
+    <select id="getCity" resultType="string">
+        select param_val from T_PARAMETER where param_key = 'CITY_NAME'
+    </select>
+
+</mapper>
